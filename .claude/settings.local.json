@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python multi_agent_customer_service.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python multi_agent_customer_service.py)",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Read(//c/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/**)",
+      "Read(//d/miniconda3/**)",
+      "Bash(PYTHONIOENCODING=utf-8 \"C:/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/langgraph.exe\" dev)",
+      "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 \"C:/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/langgraph.exe\" dev)",
+      "Bash(pip uninstall:*)",
+      "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python web_app.py)",
+      "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -c \":*)",
+      "Bash(curl:*)",
+      "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -c \"\nimport requests\ntry:\n    r = requests.post\\('http://127.0.0.1:5000/api/chat', json={'message': '你好'}, timeout=60\\)\n    print\\('Status:', r.status_code\\)\n    print\\('Body:', r.text[:500]\\)\nexcept Exception as e:\n    print\\('Error:', e\\)\n\" 2>&1)",
+      "Bash(PYTHONUTF8=1 python -c \"\nimport requests\ntry:\n    r = requests.get\\('https://api.siliconflow.cn/v1/models', headers={'Authorization': 'Bearer sk-xkontskaaylyqeshfuqvtmagqixvpvxgdnpptkqhdyxwbqtw'}, timeout=15\\)\n    print\\('Status:', r.status_code\\)\n    print\\('Body:', r.text[:500]\\)\nexcept Exception as e:\n    print\\('Error:', type\\(e\\).__name__, str\\(e\\)\\)\n\" 2>&1)",
+      "Bash(PYTHONUTF8=1 python -c \"\nimport requests, time\nstart = time.time\\(\\)\nr = requests.post\\(\n    'https://api.siliconflow.cn/v1/chat/completions',\n    headers={\n        'Authorization': 'Bearer sk-xkontskaaylyqeshfuqvtmagqixvpvxgdnpptkqhdyxwbqtw',\n        'Content-Type': 'application/json'\n    },\n    json={\n        'model': 'Qwen/Qwen3-8B',\n        'messages': [{'role': 'user', 'content': '有哪些产品推荐？'}]\n    },\n    timeout=120\n\\)\nelapsed = time.time\\(\\) - start\nprint\\(f'Time: {elapsed:.1f}s'\\)\nprint\\(f'Status: {r.status_code}'\\)\ndata = r.json\\(\\)\nif 'choices' in data:\n    print\\(f'Response: {data[\\\\\"choices\\\\\"][0][\\\\\"message\\\\\"][\\\\\"content\\\\\"][:200]}'\\)\nelse:\n    print\\(f'Error: {r.text[:500]}'\\)\n\" 2>&1)",
+      "Bash(netstat -ano)",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 2024 -State Listen | Select-Object OwningProcess\" 2>&1)",
+      "Bash(powershell -Command \"Stop-Process -Id 56440 -Force\" 2>&1)",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 2024 -State Listen -ErrorAction SilentlyContinue | Select-Object OwningProcess\" 2>&1)",
+      "Bash(powershell -Command \"Get-CimInstance Win32_Process -Filter 'ProcessId=56440' | Select-Object ProcessId,Name,CommandLine | Format-List\" 2>&1)",
+      "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 C:/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/langgraph.exe dev --port 2024 2>&1)",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue | Select-Object OwningProcess\" 2>&1)",
+      "Bash(powershell -Command \"Stop-Process -Id 55740 -Force\")",
+      "Bash(PYTHONUTF8=1 python -c \"from multi_agent_customer_service import make_graph; g = make_graph\\(\\); print\\(''Graph compiled OK''\\)\")",
+      "Bash(powershell -Command \"\\(Get-Process -Id 56440\\).Kill\\(\\)\")",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_OwningProcess -Force -ErrorAction SilentlyContinue }\")",
+      "Bash(wmic process:*)",
+      "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Select-Object Id, ProcessName | Format-Table\" 2>&1)",
+      "Bash(powershell -Command \"Stop-Process -Id 58800 -Force\")",
+      "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 C:/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/langgraph.exe dev --port 2024)",
+      "Bash(PYTHONUTF8=1 python -c \"\nimport requests, json\nr = requests.post\\('http://127.0.0.1:5000/api/chat',\n    json={'message': '你好，请问你们有什么产品', 'session_id': 'test_ls'},\n    timeout=200\\)\nprint\\(f'Status: {r.status_code}'\\)\ndata = r.json\\(\\)\nprint\\(f'Response: {json.dumps\\(data, ensure_ascii=False, indent=2\\)[:500]}'\\)\n\" 2>&1)",
+      "mcp__zai-mcp-server__analyze_image",
+      "Bash(C:/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/langgraph.exe --help)"
+    ]
+  }
+}
