@@ -8,12 +8,12 @@
   <a href="https://github.com/langchain-ai/langgraph"><img src="https://img.shields.io/badge/LangGraph-%E2%89%A51.0-purple.svg" alt="LangGraph"></a>
 </p>
 
-<p align="center"><em>模块化多智能体路由 · Flask Web 前台 · LangGraph 会话编排</em></p>
+<p align="center"><em>模块化多智能体路由 · RAG 知识检索 · Flask Web 前台 · LangGraph 会话编排</em></p>
 
 
 ## 项目概述
 
-这是一个基于LangGraph构建的多智能体客服系统，支持产品咨询、技术支持、账单处理、投诉处理等多种业务场景。系统采用模块化设计，每个智能体独立运行，通过配置文件定义工作流程。
+这是一个基于LangGraph构建的多智能体客服系统，支持产品咨询、技术支持、账单处理、投诉处理等多种业务场景。系统采用模块化设计，每个智能体独立运行，通过配置文件定义工作流程。集成 RAG（检索增强生成）模块，基于 Qdrant 向量数据库和 BGE-M3 Embedding 实现知识检索，替代传统关键词匹配，显著提升回答准确性。
 
 ## 运行效果
 
@@ -32,12 +32,24 @@
 customer-service-ai-agent/
 ├── multi_agents/ # 智能体模块
 │ ├── __init__.py # 智能体包初始化
-│ ├── base_agent.py # 基础智能体类
+│ ├── base_agent.py # 基础智能体类（含 RAG 检索方法）
 │ ├── product_agent.py # 产品专家智能体
 │ ├── tech_agent.py # 技术支持专家智能体
 │ ├── billing_agent.py # 账单专家智能体
 │ ├── complaint_agent.py # 投诉处理专家智能体
 │ └── general_agent.py # 综合客服智能体
+├── rag/ # RAG 检索增强生成模块
+│ ├── __init__.py # RAG 模块初始化
+│ ├── embeddings.py # BGE-M3 Embedding 封装（SiliconFlow API）
+│ ├── knowledge_base.py # Qdrant 向量数据库管理（内存模式）
+│ ├── retriever.py # 便捷检索函数
+│ └── init_knowledge.py # 知识库初始化与测试脚本
+├── knowledge/ # 知识文档（Markdown 格式）
+│ ├── products.md # 产品知识库
+│ ├── tech_support.md # 技术支持知识库
+│ ├── billing.md # 账单知识库
+│ ├── complaints.md # 投诉处理知识库
+│ └── general_service.md # 综合服务知识库
 ├── tools/ # 工具函数模块
 │ ├── __init__.py # 工具包初始化
 │ └── query_tools.py # 查询分类工具
@@ -74,7 +86,14 @@ customer-service-ai-agent/
 - **投诉处理专家**: 客户投诉和建议处理
 - **综合客服**: 一般咨询处理
 
-### 4. 智能对话上下文管理
+### 4. RAG 知识检索
+- **向量数据库**: 使用 Qdrant 内存模式存储知识向量，按业务领域分 Collection 管理
+- **Embedding 模型**: 基于 SiliconFlow API 调用 BAAI/bge-m3（1024 维，中英文通用）
+- **文档处理**: Markdown 知识文档按标题分割为语义片段，保留标题元数据
+- **检索策略**: 各 Agent 按所属领域在对应 Collection 中检索 Top-K 相关知识，无结果时回退到关键词匹配
+- **知识库管理**: 支持 `knowledge/` 目录下 Markdown 文档的批量加载与索引
+
+### 5. 智能对话上下文管理
 - **会话管理**: 支持多会话并发，每个会话独立管理
 - **历史对话缓存**: 完整的对话历史记录，包含时间戳和角色标识
 - **上下文感知**: 智能体基于历史对话生成连贯、个性化的回答
@@ -86,13 +105,27 @@ customer-service-ai-agent/
 ### 1. 安装依赖
 ```bash
 pip install -r requirements.txt
-pip install langgraph-cli
+pip install qdrant-client langgraph-cli
 pip install -U "langgraph-cli[inmem]"
 ```
 在win环境中，langgraph-cli下载后，需要将`langgraph.exe`路径加入PATH环境变量。或者使用时直接带全路径，例`<your site-packages>\bin\langgraph.exe`
 
 ### 2. 环境变量配置
-复制 `env_example.txt` 为 `.env` 文件并配置。
+复制 `env_example.txt` 为 `.env` 文件并配置。主要环境变量：
+
+| 变量名 | 说明 | 默认值 |
+|-------|------|-------|
+| `OPENAI_API_KEY` | LLM API 密钥（兼容 OpenAI 接口） | 无 |
+| `OPENAI_BASE_URL` | LLM API 地址 | 无 |
+| `OPENAI_MODEL` | LLM 模型名称 | `Qwen/Qwen3-8B` |
+| `EMBEDDING_MODEL` | Embedding 模型名称 | `BAAI/bge-m3` |
+| `EMBEDDING_DIMENSION` | Embedding 向量维度 | `1024` |
+| `RAG_TOP_K` | 检索返回的 Top-K 结果数 | `5` |
+| `RAG_SCORE_THRESHOLD` | 检索相似度阈值 | `0.3` |
+| `KNOWLEDGE_DIR` | 知识文档目录 | `knowledge` |
+| `LANGSMITH_API_KEY` | LangSmith 追踪密钥 | 无 |
+| `LANGSMITH_TRACING` | 是否启用 LangSmith 追踪 | `true` |
+| `LANGSMITH_PROJECT` | LangSmith 项目名 | `customer-service-ai-agent` |
 
 ### 3. 图结构自检
 ```bash
@@ -130,19 +163,50 @@ python ./web_app.py
 
 1. **会话创建**: 为每个客户创建唯一会话ID
 2. **查询分类**: 系统自动分析客户查询类型
-3. **上下文加载**: 加载历史对话上下文
-4. **智能体路由**: 根据查询类型路由到相应的专业智能体
-5. **专业处理**: 专业智能体基于上下文处理客户查询
-6. **响应生成**: 生成最终响应并更新会话历史
-7. **状态保存**: 保存对话状态和记忆信息
+3. **知识检索**: 基于向量相似度从 Qdrant 知识库中检索相关知识片段
+4. **上下文加载**: 加载历史对话上下文
+5. **智能体路由**: 根据查询类型路由到相应的专业智能体
+6. **专业处理**: 专业智能体结合检索知识和上下文处理客户查询
+7. **响应生成**: 生成最终响应并更新会话历史
+8. **状态保存**: 保存对话状态和记忆信息
 
 ### 工作流程图
 ```
-客户查询 → 会话管理 → 查询分类 → 上下文加载 → 智能体路由 → 专业处理 → 最终响应
-    ↓         ↓         ↓         ↓          ↓          ↓         ↓
-  输入    会话创建   类型识别   历史加载    专家选择    专业解答    格式化输出
-                ↓
-            状态保存
+客户查询 → 会话管理 → 查询分类 → 知识检索 → 上下文加载 → 智能体路由 → 专业处理 → 最终响应
+    ↓         ↓         ↓         ↓          ↓          ↓          ↓         ↓
+  输入    会话创建   类型识别   向量检索   历史加载    专家选择    专业解答    格式化输出
+                ↓         ↓                              ↓
+            状态保存   Qdrant+Embedding                 知识增强
+```
+
+## RAG 知识检索
+
+### 架构
+```
+knowledge/*.md → 按标题分割 → BGE-M3 Embedding → Qdrant 内存向量库
+                                                        ↓
+Agent.process() → retrieve_knowledge(query, category) → Top-K 相关片段 → 增强 LLM Prompt
+```
+
+### 知识领域与 Collection 映射
+| 业务领域 | 知识文件 | Qdrant Collection |
+|---------|---------|------------------|
+| 产品咨询 | `knowledge/products.md` | `cs_products` |
+| 技术支持 | `knowledge/tech_support.md` | `cs_tech_support` |
+| 账单处理 | `knowledge/billing.md` | `cs_billing` |
+| 投诉处理 | `knowledge/complaints.md` | `cs_complaints` |
+| 综合服务 | `knowledge/general_service.md` | `cs_general_service` |
+
+### 检索流程
+1. 知识文档（Markdown）按 `#` 标题自动分割为语义片段
+2. 各片段通过 BGE-M3 模型生成 1024 维向量
+3. 向量存入 Qdrant 对应领域的 Collection（余弦相似度）
+4. Agent 处理用户查询时，先用 `retrieve_knowledge()` 做向量检索
+5. 若检索结果低于阈值（默认 0.3），回退到关键词匹配
+
+### 知识库初始化测试
+```bash
+python -m rag.init_knowledge
 ```
 
 ### 状态管理
@@ -197,7 +261,10 @@ python ./web_app.py
 
 - **LangGraph**: 工作流编排框架
 - **LangChain Core**: LLM集成和消息处理
-- **硅基流动API**: 大语言模型服务
+- **Qdrant**: 向量数据库（内存模式），知识存储与检索
+- **BGE-M3 (BAAI)**: 中英文通用 Embedding 模型，通过 SiliconFlow API 调用
+- **硅基流动API**: 大语言模型服务（OpenAI 兼容接口）
+- **LangSmith**: 全链路追踪与调试（LLM 调用、Agent 路由、RAG 检索）
 - **模块化设计**: 高内聚、低耦合的架构
 
 ## 相关文档
