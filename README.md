@@ -1,4 +1,4 @@
-<h1 align="center">多智能体客服系统</h1>
+<h1 align="center">多智能体RAG客服系统</h1>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-yellow.svg" alt="License Apache 2.0"></a>
