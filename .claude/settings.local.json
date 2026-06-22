@@ -34,7 +34,13 @@
       "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 C:/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/langgraph.exe dev --port 2024)",
       "Bash(PYTHONUTF8=1 python -c \"\nimport requests, json\nr = requests.post\\('http://127.0.0.1:5000/api/chat',\n    json={'message': '你好，请问你们有什么产品', 'session_id': 'test_ls'},\n    timeout=200\\)\nprint\\(f'Status: {r.status_code}'\\)\ndata = r.json\\(\\)\nprint\\(f'Response: {json.dumps\\(data, ensure_ascii=False, indent=2\\)[:500]}'\\)\n\" 2>&1)",
       "mcp__zai-mcp-server__analyze_image",
-      "Bash(C:/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/langgraph.exe --help)"
+      "Bash(C:/Users/ZhouYan/AppData/Roaming/Python/Python313/Scripts/langgraph.exe --help)",
+      "Bash(xargs grep:*)",
+      "Bash(xargs ls:*)",
+      "Bash(pip list:*)",
+      "mcp__web-search-prime__web_search_prime",
+      "WebSearch",
+      "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m rag.init_knowledge)"
     ]
   }
 }

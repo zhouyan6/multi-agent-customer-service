@@ -12,7 +12,8 @@ class ProductAgent(BaseAgent):
         super().__init__(
             name="产品专家",
             role="产品信息咨询和推荐",
-            expertise=["产品规格", "价格比较", "功能特点", "市场分析"]
+            expertise=["产品规格", "价格比较", "功能特点", "市场分析"],
+            rag_category="products"
         )
 
         # TODO: 产品信息应该从数据库获取，这里只是模拟数据
@@ -62,8 +63,10 @@ class ProductAgent(BaseAgent):
         # 获取对话历史上下文（优先 state.persisted_dialogue）
         conversation_context = self._get_conversation_context(session_id, state)
 
-        # 从产品数据库中匹配相关信息
-        matched_products = self._match_products(customer_query)
+        # 从知识库检索相关信息（RAG），无结果时 fallback 到关键词匹配
+        matched_info = self.retrieve_knowledge(customer_query)
+        if not matched_info:
+            matched_info = self._match_products(customer_query)
 
         # 构建系统提示并增强对话上下文说明
         base_system_prompt = f"""你是{self.name}，专门负责{self.role}。
@@ -94,9 +97,9 @@ class ProductAgent(BaseAgent):
         messages.append(SystemMessage(content=system_prompt))
 
         # 如果有匹配的产品信息，添加到上下文中
-        if matched_products:
+        if matched_info:
             product_context = f"""产品信息：
-{matched_products}
+{matched_info}
 
 当前查询：{customer_query}"""
             messages.append(HumanMessage(content=product_context))

@@ -266,6 +266,18 @@ def final_response_node(state: AgentState) -> AgentState:
 # 也可以在langgraph.json文件中使用workflow配置化的方式定义图的结构，但功能相对简单，无法实现复杂的逻辑
 def make_graph():
     """构建LangGraph工作流图"""
+
+    # 初始化知识库（RAG）
+    try:
+        from rag.knowledge_base import get_knowledge_base
+        kb = get_knowledge_base()
+        results = kb.populate()
+        total = sum(results.values())
+        print(f"RAG knowledge base initialized: {total} chunks loaded")
+    except Exception as e:
+        print(f"[Warning] Failed to initialize knowledge base: {e}")
+        print("Agents will use keyword matching fallback")
+
     # 创建工作流图
     workflow = StateGraph(AgentState)
 

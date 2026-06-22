@@ -12,7 +12,8 @@ class TechAgent(BaseAgent):
         super().__init__(
             name="技术支持专家",
             role="技术问题诊断和解决",
-            expertise=["故障诊断", "系统优化", "软件配置", "硬件维修"]
+            expertise=["故障诊断", "系统优化", "软件配置", "硬件维修"],
+            rag_category="tech_support"
         )
 
         # TODO: 技术解决方案应该从知识库获取，这里只是模拟数据
@@ -46,8 +47,10 @@ class TechAgent(BaseAgent):
         # 对话轮次由 classify / 外层节点写入 persisted_dialogue
         conversation_context = self._get_conversation_context(session_id, state)
 
-        # 从技术数据库中匹配相关信息
-        matched_info = self._match_tech_info(customer_query)
+        # 从知识库检索相关信息（RAG），无结果时 fallback 到关键词匹配
+        matched_info = self.retrieve_knowledge(customer_query)
+        if not matched_info:
+            matched_info = self._match_tech_info(customer_query)
 
         # 构建系统提示并增强对话上下文说明
         base_system_prompt = f"""你是{self.name}，专门负责{self.role}。

@@ -14,6 +14,15 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.siliconflow.cn/v1")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "Qwen/Qwen3-8B")
 
+# Embedding 模型配置
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
+EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "1024"))
+
+# RAG 配置
+RAG_TOP_K = int(os.getenv("RAG_TOP_K", "5"))
+RAG_SCORE_THRESHOLD = float(os.getenv("RAG_SCORE_THRESHOLD", "0.3"))
+KNOWLEDGE_DIR = os.getenv("KNOWLEDGE_DIR", "knowledge")
+
 # HTTP请求配置
 HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", "30"))
 HTTP_MAX_RETRIES = int(os.getenv("HTTP_MAX_RETRIES", "3"))

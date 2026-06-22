@@ -9,10 +9,11 @@ from session_manager import LangChainSessionManager
 
 
 class BaseAgent(ABC):
-    def __init__(self, name: str, role: str, expertise: List[str], session_manager: LangChainSessionManager = None):
+    def __init__(self, name: str, role: str, expertise: List[str], rag_category: str = "", session_manager: LangChainSessionManager = None):
         self.name = name
         self.role = role
         self.expertise = expertise
+        self.rag_category = rag_category
         self.llm = None  # 将在运行时注入
         self.session_manager = session_manager or LangChainSessionManager()
 
@@ -90,3 +91,15 @@ class BaseAgent(ABC):
             "role": self.role,
             "expertise": self.expertise
         }
+
+    def retrieve_knowledge(self, query: str) -> str:
+        """
+        使用 RAG 从知识库检索相关信息
+        返回格式化的知识文本，无结果时返回空字符串
+        """
+        try:
+            from rag.retriever import retrieve
+            return retrieve(query=query, category=self.rag_category)
+        except Exception as e:
+            print(f"RAG retrieval error in {self.name}: {e}")
+            return ""
