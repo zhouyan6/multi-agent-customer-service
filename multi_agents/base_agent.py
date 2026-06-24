@@ -5,6 +5,7 @@
 
 from typing import Dict, List, Any, Optional
 from abc import ABC, abstractmethod
+import os
 from session_manager import LangChainSessionManager
 
 
@@ -81,6 +82,11 @@ class BaseAgent(ABC):
         """增强系统提示，添加对话上下文说明"""
         context_instruction = """
 
+【知识库使用规范（必须严格遵守）】
+1. 当下方提供了"知识库信息 / 服务信息 / 政策信息 / 产品信息"等内容时，你的回答【必须且只能】基于这些信息，严禁编造、推测或补充任何未在其中出现的具体数字、价格、参数、型号、时限、电话号码。
+2. 引用具体数据（价格、容量、时长、费率、电话号码等）时，必须与提供的知识库信息完全一致，逐字准确。
+3. 如果知识库信息未覆盖客户问题的某个细节，请如实说明"该信息暂未在知识库中"，不要凭经验或常识臆测。
+
 重要：请结合对话历史上下文，理解客户之前的问题和需求，提供连贯、个性化的回答。
 如果这是多轮对话，请参考之前的对话内容，避免重复信息，并基于客户的新问题提供补充信息。
 保持对话的连贯性和自然性，让客户感受到你理解他们的完整需求。"""
@@ -98,8 +104,11 @@ class BaseAgent(ABC):
     def retrieve_knowledge(self, query: str) -> str:
         """
         使用 RAG 从知识库检索相关信息
-        返回格式化的知识文本，无结果时返回空字符串
+        返回格式化的知识文本，无结果时返回空字符串。
+        设置环境变量 DISABLE_RAG=1 可强制关闭 RAG（用于与关键词匹配方案做对比评估）。
         """
+        if os.environ.get("DISABLE_RAG", "").lower() in ("1", "true", "yes"):
+            return ""
         try:
             from rag.retriever import retrieve
             return retrieve(query=query, category=self.rag_category)
