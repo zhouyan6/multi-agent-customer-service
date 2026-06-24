@@ -389,3 +389,8 @@ tmp/
 *.backup
 
 .langgraph_api
+
+# Qdrant data (Docker volume + local file mode)
+qdrant_data/
+.qdrant_data/
+qdrant_config/

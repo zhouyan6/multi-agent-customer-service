@@ -25,6 +25,10 @@ RAG_TOP_K = int(os.getenv("RAG_TOP_K", "5"))
 RAG_SCORE_THRESHOLD = float(os.getenv("RAG_SCORE_THRESHOLD", "0.3"))
 KNOWLEDGE_DIR = os.getenv("KNOWLEDGE_DIR", "knowledge")
 
+# Qdrant 向量数据库配置（为空时回退到本地文件模式）
+QDRANT_URL = os.getenv("QDRANT_URL", "")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
+
 # HTTP请求配置
 HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", "30"))
 HTTP_MAX_RETRIES = int(os.getenv("HTTP_MAX_RETRIES", "3"))

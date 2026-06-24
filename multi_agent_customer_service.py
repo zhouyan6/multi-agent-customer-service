@@ -5,6 +5,9 @@
 支持多轮对话和会话管理
 """
 
+import sys
+sys.dont_write_bytecode = True  # 禁止生成 .pyc，避免 watchfiles 死循环
+
 import os
 import json
 from typing import Dict, List, Any, Optional, TypedDict, Annotated
@@ -70,6 +73,7 @@ def initialize_llm_client():
         api_key=OPENAI_API_KEY,
         base_url=OPENAI_BASE_URL,
         model=OPENAI_MODEL,
+        temperature=0,
         timeout=HTTP_TIMEOUT,
         max_retries=HTTP_MAX_RETRIES,
     )
@@ -268,10 +272,20 @@ def make_graph():
     """构建LangGraph工作流图"""
 
     # 初始化知识库（RAG）
+    # 用独立线程执行，避免 langgraph dev 的 ASGI 阻塞检测拦截 socket.connect / time.sleep
     try:
-        from rag.knowledge_base import get_knowledge_base
-        kb = get_knowledge_base()
-        results = kb.populate()
+        import concurrent.futures
+
+        def _init_kb():
+            from rag.knowledge_base import get_knowledge_base
+            kb = get_knowledge_base()
+            if not kb.is_initialized():
+                kb.initialize()
+            return kb.populate()
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(_init_kb)
+            results = future.result(timeout=120)
         total = sum(results.values())
         print(f"RAG knowledge base initialized: {total} chunks loaded")
     except Exception as e:

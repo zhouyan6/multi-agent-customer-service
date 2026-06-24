@@ -66,29 +66,8 @@ class ComplaintAgent(BaseAgent):
 
         system_prompt = self._enhance_system_prompt_with_context(base_system_prompt)
 
-        # 构建消息列表
-        messages = []
-
-        # 添加对话历史上下文（如果有的话）
-        if conversation_context:
-            context_message = f"""对话历史上下文：
-{conversation_context}
-
-请基于以上对话历史和当前查询，提供连贯的处理方案。"""
-            messages.append(SystemMessage(content=context_message))
-
-        # 添加系统提示
-        messages.append(SystemMessage(content=system_prompt))
-
-        # 如果有匹配的投诉信息，添加到上下文中
-        if matched_info:
-            complaint_context = f"""投诉处理政策：
-{matched_info}
-
-当前查询：{customer_query}"""
-            messages.append(HumanMessage(content=complaint_context))
-        else:
-            messages.append(HumanMessage(content=customer_query))
+        # 构建消息列表（知识库信息放入 SystemMessage，减少幻觉）
+        messages = self._build_messages(system_prompt, customer_query, matched_info, conversation_context)
 
         # 调用LLM
         try:

@@ -184,7 +184,7 @@ def ensure_assistant_exists() -> bool:
                 "graph_id": LANGGRAPH_GRAPH_NAME,
                 "limit": 1
             },
-            timeout=10
+            timeout=30
         )
 
         if search_response.status_code == 200:
@@ -201,7 +201,7 @@ def ensure_assistant_exists() -> bool:
                 "name": "Customer Service Assistant",
                 "description": "Multi-agent customer service system"
             },
-            timeout=10
+            timeout=30
         )
 
         if create_response.status_code == 200:
@@ -229,7 +229,7 @@ def ensure_thread_exists(client_session_id: Optional[str] = None) -> bool:
         try:
             thread_response = requests.get(
                 f"{LANGGRAPH_API_URL}/threads/{sid}",
-                timeout=5
+                timeout=30
             )
             if thread_response.status_code == 200:
                 _current_thread_id = sid
@@ -248,7 +248,7 @@ def ensure_thread_exists(client_session_id: Optional[str] = None) -> bool:
         response = requests.post(
             f"{LANGGRAPH_API_URL}/threads",
             json={},
-            timeout=10
+            timeout=30
         )
 
         if response.status_code == 200:
@@ -315,7 +315,7 @@ def fetch_sessions_list() -> Tuple[Optional[List[Dict[str, Any]]], Optional[str]
             try:
                 state_response = requests.get(
                     f"{LANGGRAPH_API_URL}/threads/{thread_id}/state",
-                    timeout=5
+                    timeout=30
                 )
                 if state_response.status_code == 200:
                     state_data = state_response.json()
@@ -356,7 +356,7 @@ def fetch_session_detail(session_id: str) -> Tuple[Optional[Dict[str, Any]], Opt
         try:
             state_response = requests.get(
                 f"{LANGGRAPH_API_URL}/threads/{session_id}/state",
-                timeout=5
+                timeout=30
             )
             if state_response.status_code == 200:
                 state_data = state_response.json()
@@ -382,7 +382,7 @@ def fetch_session_detail(session_id: str) -> Tuple[Optional[Dict[str, Any]], Opt
 
 def delete_remote_thread(thread_id: str) -> Tuple[bool, int]:
     """删除 LangGraph 线程。成功为任意 2xx（DELETE 常为 204 No Content）。"""
-    response = requests.delete(f"{LANGGRAPH_API_URL}/threads/{thread_id}", timeout=10)
+    response = requests.delete(f"{LANGGRAPH_API_URL}/threads/{thread_id}", timeout=30)
     ok = 200 <= response.status_code < 300
     return ok, response.status_code
 
@@ -399,7 +399,7 @@ def clear_thread_and_create_new(thread_id: str) -> Tuple[Optional[str], Optional
     new_thread_response = requests.post(
         f"{LANGGRAPH_API_URL}/threads",
         json={},
-        timeout=10
+        timeout=30
     )
 
     if new_thread_response.status_code != 200:
@@ -470,7 +470,7 @@ def run_chat_sync(user_message: str, client_session_id: Optional[str] = None) ->
             time.sleep(0.5)
             status_response = requests.get(
                 f"{LANGGRAPH_API_URL}/threads/{_current_thread_id}/runs/{run_id}",
-                timeout=10
+                timeout=30
             )
             if status_response.status_code != 200:
                 print(f"❌ 获取运行状态失败: {status_response.status_code}")
@@ -482,7 +482,7 @@ def run_chat_sync(user_message: str, client_session_id: Optional[str] = None) ->
             if run_status in ["completed", "success"]:
                 thread_response = requests.get(
                     f"{LANGGRAPH_API_URL}/threads/{_current_thread_id}/state",
-                    timeout=10
+                    timeout=30
                 )
                 if thread_response.status_code == 200:
                     thread_state = thread_response.json()
@@ -561,7 +561,7 @@ def stream_chat_events(user_message: str, client_session_id: Optional[str] = Non
             time.sleep(0.5)
             status_response = requests.get(
                 f"{LANGGRAPH_API_URL}/threads/{tid}/runs/{run_id}",
-                timeout=10
+                timeout=30
             )
             if status_response.status_code != 200:
                 yield f"data: {json.dumps({'error': f'获取运行状态失败: {status_response.status_code}'})}\n\n"
@@ -573,7 +573,7 @@ def stream_chat_events(user_message: str, client_session_id: Optional[str] = Non
             if run_status in ["completed", "success"]:
                 thread_response = requests.get(
                     f"{LANGGRAPH_API_URL}/threads/{tid}/state",
-                    timeout=10
+                    timeout=30
                 )
                 if thread_response.status_code == 200:
                     thread_state = thread_response.json()
@@ -603,13 +603,13 @@ def langgraph_connectivity_test() -> Tuple[Optional[Dict[str, Any]], Optional[st
     try:
         health_check_status = 0
         try:
-            ok_response = requests.get(f"{LANGGRAPH_API_URL}/ok", timeout=5)
+            ok_response = requests.get(f"{LANGGRAPH_API_URL}/ok", timeout=30)
             health_check_status = ok_response.status_code
         except requests.exceptions.RequestException as e:
             print(f"⚠️ LangGraph GET /ok 失败: {e}")
 
-        threads_response = requests.post(f"{LANGGRAPH_API_URL}/threads/search", json={}, timeout=10)
-        assistants_response = requests.post(f"{LANGGRAPH_API_URL}/assistants/search", json={}, timeout=10)
+        threads_response = requests.post(f"{LANGGRAPH_API_URL}/threads/search", json={}, timeout=30)
+        assistants_response = requests.post(f"{LANGGRAPH_API_URL}/assistants/search", json={}, timeout=30)
 
         if not (200 <= health_check_status < 300) and (200 <= threads_response.status_code < 300):
             print("⚠️ LangGraph GET /ok 未成功，但 threads/search 正常，健康检查标记为通过")

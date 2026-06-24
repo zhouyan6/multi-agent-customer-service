@@ -82,29 +82,8 @@ class ProductAgent(BaseAgent):
 
         system_prompt = self._enhance_system_prompt_with_context(base_system_prompt)
 
-        # 构建消息列表
-        messages = []
-
-        # 添加对话历史上下文（如果有的话）
-        if conversation_context:
-            context_message = f"""对话历史上下文：
-{conversation_context}
-
-请基于以上对话历史和当前查询，提供连贯的回答。"""
-            messages.append(SystemMessage(content=context_message))
-
-        # 添加系统提示
-        messages.append(SystemMessage(content=system_prompt))
-
-        # 如果有匹配的产品信息，添加到上下文中
-        if matched_info:
-            product_context = f"""产品信息：
-{matched_info}
-
-当前查询：{customer_query}"""
-            messages.append(HumanMessage(content=product_context))
-        else:
-            messages.append(HumanMessage(content=customer_query))
+        # 构建消息列表（知识库信息放入 SystemMessage，减少幻觉）
+        messages = self._build_messages(system_prompt, customer_query, matched_info, conversation_context)
 
         # 调用LLM
         try:

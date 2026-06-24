@@ -93,6 +93,41 @@ class BaseAgent(ABC):
 
         return base_prompt + context_instruction
 
+    def _build_messages(self, system_prompt: str, customer_query: str,
+                        matched_info: str = "", conversation_context: str = "") -> list:
+        """
+        构建消息列表。将检索到的知识放入 SystemMessage（而非 HumanMessage），
+        提高模型对知识的依从性，减少幻觉。
+
+        消息结构：
+          [SystemMessage] 对话历史（可选）
+          [SystemMessage] 系统提示 + 知识库信息（合并，强约束）
+          [HumanMessage]  用户纯问题
+        """
+        from langchain_core.messages import HumanMessage, SystemMessage
+
+        messages = []
+
+        if conversation_context:
+            messages.append(SystemMessage(
+                content=f"对话历史上下文：\n{conversation_context}\n\n请基于以上对话历史和当前查询，提供连贯的解答。"
+            ))
+
+        if matched_info:
+            full_system = (
+                f"{system_prompt}\n\n"
+                f"=== 知识库检索结果（你的回答【必须且只能】基于以下信息，"
+                f"禁止编造任何未提及的数字、参数、价格、型号、时限） ===\n"
+                f"{matched_info}\n"
+                f"=== 知识库检索结果结束 ==="
+            )
+            messages.append(SystemMessage(content=full_system))
+        else:
+            messages.append(SystemMessage(content=system_prompt))
+
+        messages.append(HumanMessage(content=customer_query))
+        return messages
+
     def get_info(self) -> Dict[str, Any]:
         """获取智能体信息"""
         return {
@@ -108,10 +143,13 @@ class BaseAgent(ABC):
         设置环境变量 DISABLE_RAG=1 可强制关闭 RAG（用于与关键词匹配方案做对比评估）。
         """
         if os.environ.get("DISABLE_RAG", "").lower() in ("1", "true", "yes"):
+            print(f"[DEBUG] {self.name} RAG已禁用(DISABLE_RAG=1)")
             return ""
         try:
             from rag.retriever import retrieve
-            return retrieve(query=query, category=self.rag_category)
+            result = retrieve(query=query, category=self.rag_category)
+            print(f"[DEBUG] {self.name} RAG检索: query='{query[:30]}' → {'有结果('+str(len(result))+'字符)' if result else '空!'}")
+            return result
         except Exception as e:
             print(f"RAG retrieval error in {self.name}: {e}")
             return ""
