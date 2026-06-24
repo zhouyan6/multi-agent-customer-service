@@ -34,6 +34,7 @@ class KnowledgeBase:
     def initialize(self) -> None:
         """初始化 Qdrant 客户端和所有集合"""
         self.client = QdrantClient(":memory:")
+        #内存模式:数据存内存,不写硬盘(重启就没数据)
         self.embeddings = get_embeddings()
 
         for category in CATEGORIES:

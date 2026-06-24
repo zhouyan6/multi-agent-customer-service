@@ -41,6 +41,9 @@
       "mcp__web-search-prime__web_search_prime",
       "WebSearch",
       "Bash(PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m rag.init_knowledge)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\ZhouYan\\.claude"
     ]
   }
 }

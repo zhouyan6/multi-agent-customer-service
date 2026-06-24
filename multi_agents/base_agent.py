@@ -29,7 +29,10 @@ class BaseAgent(ABC):
     def process(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """处理客户查询的抽象方法"""
         pass
+#@abstractmethod:这是个装饰器,标记"这方法是抽象的 —— 父类只声明不实现,子类必须自己写"。
+#pass:占位符,表示"这里啥也不做"(因为抽象方法本来就不该有实现)。
 
+#方法名前下划线 _ = 约定"这是内部方法,只给类自己/子类用,外部别调"。
     def _get_conversation_context(
         self,
         session_id: str,
